@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRG Global PR Dashboard</title>
+<style>
+/* ---- TOKENS ---- */
+:root {
+  --font-sans: 'Helvetica Neue', Arial, sans-serif;
+  --color-page: #ffffff;
+  --color-surface: #f6f5f2;
+  --color-border: #e8e6e1;
+  --color-border-mid: #d0cdc6;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #6b6b66;
+  --color-text-disabled: #aaa9a3;
+  --color-brand: #1a1a18;
+  --color-up: #2a7a2a;
+  --color-down: #b83232;
+  --color-amber: #b87a00;
+  --color-edit: #421540;
+  /* market accents */
+  --apac: #378ADD;
+  --na: #1D9E75;
+  --uk: #BA7517;
+  --emea: #7F77DD;
+  --lelit: #C0392B;
+  --lelit-fill: #FDECEA; --lelit-text: #7B1E1E;
+  /* tier */
+  --t1-fill: #E6F1FB; --t1-text: #0C447C; --t1-bar: #378ADD;
+  --t2-fill: #EAF3DE; --t2-text: #27500A; --t2-bar: #1D9E75;
+  --t3-fill: #F1EFE8; --t3-text: #444441; --t3-bar: #888780;
+  /* coverage type */
+  --npd-fill: #FAEEDA; --npd-text: #633806;
+  --po-fill: #E1F5EE;  --po-text: #085041;
+  --inf-fill: #EEEDFE; --inf-text: #3C3489;
+  --rr-fill:  #E6F1FB; --rr-text: #185FA5;
+  /* sentiment */
+  --pos-fill: #EAF3DE; --pos-text: #27500A;
+  --neu-fill: #F1EFE8; --neu-text: #444441;
+  --neg-fill: #FCEBEB; --neg-text: #791F1F;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); background: var(--color-page); color: var(--color-text-primary); font-size: 14px; line-height: 1.5; }
+
+/* ---- LAYOUT ---- */
+.app { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+
+/* ---- HEADER ---- */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 0 16px; border-bottom: 1px solid var(--color-border);
+  margin-bottom: 0; flex-wrap: wrap; gap: 12px;
+}
+.header-left {}
+.header-eyebrow { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--color-text-secondary); margin-bottom: 4px; }
+.header h2 { font-size: 22px; font-weight: 700; }
+.header-right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btn { font-family: var(--font-sans); font-size: 12px; font-weight: 700; padding: 7px 14px; border: 1px solid var(--color-border-mid); border-radius: 4px; background: var(--color-page); color: var(--color-text-primary); cursor: pointer; }
+.btn:hover { background: var(--color-surface); }
+.btn-primary { background: var(--color-brand); color: #fff; border-color: var(--color-brand); }
+.btn-primary:hover { background: #333; }
+.btn-sm { font-size: 11px; padding: 5px 10px; }
+.gear-btn { font-size: 16px; background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+.gear-btn:hover { background: var(--color-surface); }
+.admin-actions { display: none; gap: 8px; align-items: center; }
+.admin-actions.active { display: flex; }
+.editing-badge { display: none; font-size: 11px; font-weight: 700; background: var(--color-edit); color: #fff; padding: 4px 10px; border-radius: 999px; }
+.editing-badge.active { display: inline-block; }
+
+/* ---- NAV ---- */
+.nav { display: flex; gap: 0; border-bottom: 1px solid var(--color-border); margin-bottom: 28px; flex-wrap: wrap; }
+.nav-tab { font-family: var(--font-sans); font-size: 13px; font-weight: 700; padding: 12px 18px; border: none; background: none; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.nav-tab:hover { color: var(--color-text-primary); }
+.nav-tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); }
+.nav-tab[data-market="apac"].active { border-bottom-color: var(--apac); color: var(--apac); }
+.nav-tab[data-market="na"].active   { border-bottom-color: var(--na);   color: var(--na); }
+.nav-tab[data-market="uk"].active   { border-bottom-color: var(--uk);   color: var(--uk); }
+.nav-tab[data-market="lelit"].active { border-bottom-color: var(--lelit); color: var(--lelit); }
+.metric-card.accent-lelit { border-top-color: var(--lelit); }
+.mkt-summary.lelit { border-top-color: var(--lelit); }
+
+/* ---- TAB CONTENT ---- */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ---- SUB TABS ---- */
+.sub-nav { display: flex; gap: 0; border-bottom: 1px solid var(--color-border); margin-bottom: 20px; }
+.sub-tab { font-family: var(--font-sans); font-size: 12px; font-weight: 700; padding: 9px 16px; border: none; background: none; color: var(--color-text-secondary); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; text-transform: uppercase; letter-spacing: .04em; }
+.sub-tab:hover { color: var(--color-text-primary); }
+.sub-tab.active { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); }
+.sub-content { display: none; }
+.sub-content.active { display: block; }
+
+/* ---- METRICS BAR ---- */
+.metrics-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap: 12px; margin-bottom: 28px; }
+.metric-card { background: var(--color-surface); border-radius: 4px; padding: 16px; border-top: 3px solid var(--color-border-mid); }
+.metric-card.accent-apac { border-top-color: var(--apac); }
+.metric-card.accent-na   { border-top-color: var(--na); }
+.metric-card.accent-uk   { border-top-color: var(--uk); }
+.metric-card.accent-emea { border-top-color: var(--emea); }
+.metric-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-secondary); margin-bottom: 6px; }
+.metric-value { font-size: 24px; font-weight: 700; }
+.metric-sub   { font-size: 11px; color: var(--color-text-secondary); margin-top: 3px; }
+
+/* ---- SECTION HEADING ---- */
+.section-h { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-secondary); margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--color-border); }
+
+/* ---- COVERAGE CARDS ---- */
+.coverage-list { display: flex; flex-direction: column; gap: 8px; }
+.cov-card { background: var(--color-page); border: 1px solid var(--color-border); border-left: 3px solid var(--color-border-mid); border-radius: 0 4px 4px 0; padding: 12px 16px; }
+.cov-card.t1 { border-left-color: var(--t1-bar); }
+.cov-card.t2 { border-left-color: var(--t2-bar); }
+.cov-card.t3 { border-left-color: var(--t3-bar); }
+.cov-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.cov-outlet { font-size: 13px; font-weight: 700; }
+.cov-date { font-size: 11px; color: var(--color-text-secondary); white-space: nowrap; }
+.cov-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+.badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.badge.t1  { background: var(--t1-fill);  color: var(--t1-text); }
+.badge.t2  { background: var(--t2-fill);  color: var(--t2-text); }
+.badge.t3  { background: var(--t3-fill);  color: var(--t3-text); }
+.badge.npd { background: var(--npd-fill); color: var(--npd-text); }
+.badge.po  { background: var(--po-fill);  color: var(--po-text); }
+.badge.inf { background: var(--inf-fill); color: var(--inf-text); }
+.badge.rr  { background: var(--rr-fill);  color: var(--rr-text); }
+.badge.pos { background: var(--pos-fill); color: var(--pos-text); }
+.badge.neu { background: var(--neu-fill); color: var(--neu-text); }
+.badge.neg { background: var(--neg-fill); color: var(--neg-text); }
+.badge.fmt { background: var(--color-surface); color: var(--color-text-secondary); }
+.badge.comp { background: var(--neg-fill); color: var(--neg-text); }
+.badge.plc { background: var(--color-surface); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+.cov-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; font-size: 11px; color: var(--color-text-secondary); }
+.ptags { display: flex; gap: 4px; flex-wrap: wrap; }
+.ptag { background: var(--color-surface); padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--color-text-primary); }
+.cluster-note { font-size: 11px; color: var(--color-text-secondary); font-style: italic; margin-top: 6px; line-height: 1.5; }
+
+/* ---- INSIGHT BOXES ---- */
+.insight-box { background: var(--color-surface); border-radius: 4px; border-left: 3px solid var(--color-border-mid); padding: 14px 18px; margin-bottom: 10px; }
+.insight-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+.insight-body { font-size: 13px; color: var(--color-text-secondary); line-height: 1.65; }
+.alert-box { background: #FAEEDA; border-left: 3px solid #BA7517; border-radius: 4px; padding: 12px 16px; margin-bottom: 10px; font-size: 13px; color: #633806; line-height: 1.55; }
+.alert-box b { color: #422200; }
+.warn-box  { background: #FCEBEB; border-left: 3px solid #E24B4A; border-radius: 4px; padding: 12px 16px; margin-bottom: 10px; font-size: 13px; color: #791F1F; line-height: 1.55; }
+.warn-box b { color: #501313; }
+
+/* ---- PRODUCTS TABLE ---- */
+.prod-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.prod-table th { text-align: left; padding: 8px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border-mid); background: var(--color-surface); }
+.prod-table td { padding: 9px 10px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.prod-table tr:hover td { background: var(--color-surface); }
+
+/* ---- PIPELINE LIST ---- */
+.pipeline-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+.pipe-item { background: var(--color-page); border: 1px solid var(--color-border); border-radius: 4px; padding: 9px 14px; font-size: 13px; display: flex; align-items: flex-start; gap: 10px; }
+.pipe-dot { width: 8px; height: 8px; min-width: 8px; border-radius: 50%; background: var(--color-border-mid); margin-top: 4px; }
+.pipe-dot.t1  { background: var(--t1-bar); }
+.pipe-dot.inf { background: var(--inf-text); }
+.pipe-text { color: var(--color-text-primary); line-height: 1.5; }
+.pipe-text b { font-weight: 700; }
+
+/* ---- GLOBAL VIEW ---- */
+.global-mkt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 14px; margin-bottom: 28px; }
+.mkt-summary { background: var(--color-page); border: 1px solid var(--color-border); border-radius: 4px; padding: 16px; border-top: 3px solid var(--color-border-mid); }
+.mkt-summary.apac { border-top-color: var(--apac); }
+.mkt-summary.na   { border-top-color: var(--na); }
+.mkt-summary.uk   { border-top-color: var(--uk); }
+.mkt-summary.emea { border-top-color: var(--emea); }
+.mkt-summary-name { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+.mkt-summary-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mkt-stat { font-size: 11px; color: var(--color-text-secondary); }
+.mkt-stat span { display: block; font-size: 18px; font-weight: 700; color: var(--color-text-primary); }
+
+/* SOV bars */
+.sov-section { margin-bottom: 28px; }
+.sov-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.sov-label { width: 140px; font-size: 12px; color: var(--color-text-secondary); flex-shrink: 0; }
+.sov-track { flex: 1; background: var(--color-surface); border-radius: 2px; height: 8px; overflow: hidden; }
+.sov-fill  { height: 100%; border-radius: 2px; transition: width .4s ease; }
+.sov-pct   { width: 40px; text-align: right; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+
+/* Tier dist bars */
+.tier-dist-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.tier-dist-label { width: 140px; font-size: 12px; color: var(--color-text-secondary); flex-shrink: 0; }
+.tier-dist-bar { flex: 1; height: 16px; display: flex; border-radius: 2px; overflow: hidden; }
+.tier-dist-note { width: 160px; font-size: 11px; color: var(--color-text-secondary); text-align: right; flex-shrink: 0; }
+
+/* ---- HIGHLIGHTS (editable) ---- */
+.highlights-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 14px; margin-bottom: 28px; }
+.highlight-card { border: 1px dashed var(--color-border); border-radius: 4px; padding: 20px; position: relative; min-height: 120px; display: flex; flex-direction: column; }
+.highlight-card.populated { border-style: solid; background: var(--color-page); }
+.highlight-eyebrow { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--color-text-disabled); margin-bottom: 8px; }
+.highlight-prompt { font-size: 13px; font-style: italic; color: var(--color-text-disabled); margin: auto; text-align: center; }
+.highlight-title  { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+.highlight-body   { font-size: 13px; line-height: 1.6; color: var(--color-text-secondary); }
+.highlight-edit-btn { display: none; position: absolute; top: 10px; right: 10px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 4px; padding: 3px 8px; font-size: 10px; font-weight: 700; cursor: pointer; color: var(--color-text-secondary); }
+.edit-mode .highlight-edit-btn { display: block; }
+
+/* ---- EDIT MODE ---- */
+.edit-mode .editable-value { border-bottom: 1.5px dashed var(--color-edit); cursor: pointer; padding: 0 2px; }
+.edit-mode .editable-value::after { content: ' ✏'; font-size: 9px; color: var(--color-edit); opacity: .6; margin-left: 1px; }
+.edit-mode .editable-value:hover::after { opacity: 1; }
+.edit-mode .editable-value:hover { background: rgba(66,21,64,.05); }
+
+/* ---- MODAL ---- */
+.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000; align-items: center; justify-content: center; }
+.modal-backdrop.active { display: flex; }
+.modal { background: var(--color-page); border-radius: 6px; border: 1px solid var(--color-border-mid); width: 440px; max-width: 96vw; overflow: hidden; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--color-border); }
+.modal-header-title { font-size: 15px; font-weight: 700; }
+.modal-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--color-text-secondary); line-height: 1; }
+.modal-body { padding: 20px; }
+.modal-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-secondary); margin-bottom: 6px; margin-top: 14px; display: block; }
+.modal-label:first-child { margin-top: 0; }
+.modal input, .modal textarea { width: 100%; font-family: var(--font-sans); font-size: 13px; padding: 8px 10px; border: 1px solid var(--color-border-mid); border-radius: 4px; background: var(--color-page); color: var(--color-text-primary); }
+.modal textarea { min-height: 80px; resize: vertical; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--color-border); }
+
+/* value popover */
+.value-popover { position: absolute; z-index: 2000; background: var(--color-page); border: 1px solid var(--color-border-mid); border-radius: 6px; padding: 12px 14px; width: 220px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+.value-popover-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--color-text-secondary); }
+.value-popover input { width: 100%; font-family: var(--font-sans); font-size: 14px; padding: 7px 10px; border: 1px solid var(--color-border-mid); border-radius: 4px; margin-bottom: 10px; }
+.value-popover-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+/* ---- ADD COVERAGE (edit mode) ---- */
+.add-coverage-btn { display: none; width: 100%; border: 1px dashed var(--color-border-mid); background: none; border-radius: 4px; padding: 10px; font-family: var(--font-sans); font-size: 12px; font-weight: 700; color: var(--color-text-secondary); cursor: pointer; margin-top: 8px; }
+.add-coverage-btn:hover { background: var(--color-surface); color: var(--color-text-primary); }
+.edit-mode .add-coverage-btn { display: block; }
+
+/* SOV note */
+.sov-note { font-size: 11px; color: var(--color-text-secondary); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 4px; padding: 5px 12px; display: inline-block; }
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 600px) {
+  .app { padding: 0 14px 40px; }
+  .header h2 { font-size: 18px; }
+  .metrics-bar { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-eyebrow">BRG Group · Global Communications</div>
+      <h2>PR Coverage Dashboard — <span id="report-period">Week of 27 Apr – 8 May 2026</span></h2>
+    </div>
+    <div class="header-right">
+      <span class="sov-note">T1=3× · T2=2× · T3=1× · Prestige &amp; editorial authority</span>
+      <button class="btn" id="export-btn">📥 Export snapshot</button>
+      <button class="gear-btn" id="gear-btn" title="Admin">⚙</button>
+      <div class="admin-actions" id="admin-actions">
+        <button class="btn btn-primary" id="enter-edit-btn">Enter edit mode</button>
+        <button class="btn" id="exit-edit-btn" style="display:none">Exit edit mode</button>
+        <button class="btn" id="exit-admin-btn">Exit admin</button>
+      </div>
+      <span class="editing-badge" id="editing-badge">✏ Editing</span>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <button class="nav-tab active" data-tab="overview">Overview</button>
+    <button class="nav-tab" data-tab="apac" data-market="apac">🇦🇺 APAC</button>
+    <button class="nav-tab" data-tab="na" data-market="na">🇺🇸 North America</button>
+    <button class="nav-tab" data-tab="uk" data-market="uk">🇬🇧 UK</button>
+    <button class="nav-tab" data-tab="emea" data-market="emea">🇪🇺 EMEA</button>
+    <button class="nav-tab" data-tab="lelit" data-market="lelit">🔴 LELIT</button>
+  </nav>
+
+  <!-- ===== OVERVIEW ===== -->
+  <section id="tab-overview" class="tab-content active">
+
+    <div class="section-h" style="margin-top:0">Global highlights</div>
+    <div class="highlights-grid" id="highlights-grid"></div>
+
+    <div class="section-h">Global summary</div>
+    <div class="global-mkt-grid">
+      <div class="mkt-summary apac">
+        <div class="mkt-summary-name">🇦🇺 APAC</div>
+        <div class="mkt-summary-stats">
+          <div class="mkt-stat"><span class="editable-value" data-key="apac.meta.pieces">21</span>Pieces</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="apac.meta.t1">4</span>Tier 1</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="apac.meta.sov">69%</span>Wtd SOV</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="apac.meta.reach">19.9M</span>Reach</div>
+        </div>
+      </div>
+      <div class="mkt-summary na">
+        <div class="mkt-summary-name">🇺🇸 North America</div>
+        <div class="mkt-summary-stats">
+          <div class="mkt-stat"><span class="editable-value" data-key="na.meta.pieces">41</span>Pieces</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="na.meta.t1">18</span>Tier 1</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="na.meta.sov">61%</span>Wtd SOV</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="na.meta.reach">201M</span>Reach</div>
+        </div>
+      </div>
+      <div class="mkt-summary uk">
+        <div class="mkt-summary-name">🇬🇧 UK</div>
+        <div class="mkt-summary-stats">
+          <div class="mkt-stat"><span class="editable-value" data-key="uk.meta.pieces">—</span>Pieces</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="uk.meta.t1">—</span>Tier 1</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="uk.meta.sov">—</span>Wtd SOV</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="uk.meta.reach">—</span>Reach</div>
+        </div>
+      </div>
+      <div class="mkt-summary emea">
+        <div class="mkt-summary-name">🇪🇺 EMEA</div>
+        <div class="mkt-summary-stats">
+          <div class="mkt-stat"><span class="editable-value" data-key="emea.meta.pieces">—</span>Pieces</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="emea.meta.t1">—</span>Tier 1</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="emea.meta.sov">—</span>Wtd SOV</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="emea.meta.reach">—</span>Reach</div>
+        </div>
+      </div>
+      <div class="mkt-summary lelit">
+        <div class="mkt-summary-name">🔴 LELIT</div>
+        <div class="mkt-summary-stats">
+          <div class="mkt-stat"><span class="editable-value" data-key="lelit.meta.pieces">7</span>Pieces</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="lelit.meta.t1">5</span>Tier 1</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="lelit.meta.sov">82%</span>Wtd SOV</div>
+          <div class="mkt-stat"><span class="editable-value" data-key="lelit.meta.reach">137M</span>Reach</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-h">Weighted SOV by market</div>
+    <div class="sov-section">
+      <div class="sov-row"><div class="sov-label">🇦🇺 APAC</div><div class="sov-track"><div class="sov-fill" style="width:69%;background:var(--apac)"></div></div><div class="sov-pct">69%</div></div>
+      <div class="sov-row"><div class="sov-label">🇺🇸 North America</div><div class="sov-track"><div class="sov-fill" style="width:61%;background:var(--na)"></div></div><div class="sov-pct">61%</div></div>
+      <div class="sov-row"><div class="sov-label">🇬🇧 UK</div><div class="sov-track"><div class="sov-fill" style="width:0%;background:var(--uk)"></div></div><div class="sov-pct">—</div></div>
+      <div class="sov-row"><div class="sov-label">🇪🇺 EMEA</div><div class="sov-track"><div class="sov-fill" style="width:0%;background:var(--emea)"></div></div><div class="sov-pct">—</div></div>
+      <div class="sov-row"><div class="sov-label">🔴 LELIT</div><div class="sov-track"><div class="sov-fill" style="width:82%;background:var(--lelit)"></div></div><div class="sov-pct">82%</div></div>
+    </div>
+
+    <div class="section-h">Tier distribution</div>
+    <div class="sov-section">
+      <div class="tier-dist-row">
+        <div class="tier-dist-label" style="font-size:12px;color:var(--color-text-secondary)">🇦🇺 APAC (21 pcs)</div>
+        <div class="tier-dist-bar"><div style="width:19%;background:var(--t1-bar)"></div><div style="width:33%;background:var(--t2-bar)"></div><div style="width:48%;background:var(--t3-bar)"></div></div>
+        <div class="tier-dist-note">T1 19% · T2 33% · T3 48%</div>
+      </div>
+      <div class="tier-dist-row">
+        <div class="tier-dist-label" style="font-size:12px;color:var(--color-text-secondary)">🇺🇸 NA (35 pcs)</div>
+        <div class="tier-dist-bar"><div style="width:40%;background:var(--t1-bar)"></div><div style="width:34%;background:var(--t2-bar)"></div><div style="width:26%;background:var(--t3-bar)"></div></div>
+        <div class="tier-dist-note">T1 40% · T2 34% · T3 26%</div>
+      </div>
+    </div>
+
+    <div class="insight-box" style="border-left-color:var(--color-brand)">
+      <div class="insight-title">🌐 Global strategic read — 27 Apr – 8 May 2026</div>
+      <div class="insight-body editable-value" data-key="overview.global.read">56 pieces across APAC and NA this week. Mother's Day is the dominant editorial hook in both markets simultaneously. Smart Oven / Air Fryer is the strongest cross-market thread — T1 performance in NA (Serious Eats, Food &amp; Wine, New York Post, EatingWell) mirrored by appearances in APAC. Pomodoro Rosso NPD is launching well in APAC with AFR placement and a 28-item confirmed pipeline. NA is entirely always-on this week. Oracle Dual Boiler is building quietly across both markets — worth monitoring as a slow-burn global thread. NA T1 rate (40%) significantly outperforms APAC (19%) once passive mention clusters are stripped from APAC's count.</div>
+    </div>
+  </section>
+
+  <!-- ===== APAC ===== -->
+  <section id="tab-apac" class="tab-content">
+    <div class="metrics-bar">
+      <div class="metric-card accent-apac"><div class="metric-label">Total pieces</div><div class="metric-value editable-value" data-key="apac.pieces">21</div></div>
+      <div class="metric-card accent-apac"><div class="metric-label">Tier 1</div><div class="metric-value editable-value" data-key="apac.t1">4</div></div>
+      <div class="metric-card accent-apac"><div class="metric-label">Weighted SOV %</div><div class="metric-value editable-value" data-key="apac.sov">69%</div></div>
+      <div class="metric-card accent-apac"><div class="metric-label">Total audience</div><div class="metric-value editable-value" data-key="apac.reach">19.9M</div></div>
+      <div class="metric-card accent-apac"><div class="metric-label">NPD pieces</div><div class="metric-value editable-value" data-key="apac.npd">3</div></div>
+      <div class="metric-card accent-apac"><div class="metric-label">Influencer pieces</div><div class="metric-value editable-value" data-key="apac.inf">4</div></div>
+    </div>
+    <div class="sub-nav">
+      <button class="sub-tab active" data-sub="apac-feed">Coverage feed</button>
+      <button class="sub-tab" data-sub="apac-insights">Insights</button>
+      <button class="sub-tab" data-sub="apac-products">Products</button>
+      <button class="sub-tab" data-sub="apac-pipeline">Pipeline (28)</button>
+    </div>
+
+    <!-- APAC FEED -->
+    <div id="apac-feed" class="sub-content active">
+      <div class="section-h" style="margin-top:0">Tier 1 — 4 pieces</div>
+      <div class="coverage-list" id="apac-feed-list">
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Channel 9 / Weekend Today</div><div class="cov-date">2 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Broadcast</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Eye Q Toaster</span><span class="ptag">Kettle</span><span class="ptag">Bambino</span></div><div>Audience 908K · Mother's Day gifting</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Australian Financial Review — Spend</div><div class="cov-date">8 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge npd">NPD launch</span><span class="badge pos">Positive</span><span class="badge fmt">Print</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Bambino Plus — Pomodoro Rosso</span></div><div>Audience 272K</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">CHOICE Magazine — Full of Beans</div><div class="cov-date">5 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge po">Press office</span><span class="badge pos">Positive</span><span class="badge fmt">Print</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Grinder Pro</span><span class="ptag">Dose Control Pro</span><span class="ptag">Coffee &amp; Spice</span></div><div>Audience 400K · Coffee grinder editorial feature</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">News.com.au — Best deals of the week</div><div class="cov-date">4 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Luxe Crystal Kettle &amp; Toaster</span><span class="ptag">Bambino Plus</span><span class="ptag">Power Toastie 4-Slice</span></div><div>Audience 11.6M</div></div>
+        </div>
+
+        <div class="section-h">Tier 2 — 7 pieces</div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">9Now — Mother's Day Gift Guide 2026</div><div class="cov-date">3 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Bambino Plus</span><span class="ptag">Eye Q Toaster</span><span class="ptag">Kettle</span></div><div>Audience 876K</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">The Sun-Herald / The Sunday Age — Mama Bird</div><div class="cov-date">3 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge po">Press office</span><span class="badge pos">Positive</span><span class="badge fmt">Print</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Coffee Tamper</span></div><div>Audience 768K combined · Same article, 2 mastheads</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">Nine.com.au — Deals roundup</div><div class="cov-date">6 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Oven Pro</span></div><div>Audience 4.6M</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">Homes To Love — Slow cooker revival</div><div class="cov-date">6 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge po">Press office</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Temp Slow Cooker</span></div><div>Audience 215K</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">Women's Weekly Food — Best waffle makers</div><div class="cov-date">6 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Waffle</span><span class="ptag">No Mess Waffle</span></div><div>Audience 235K</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">Appliance Retailer — COFOSS Conference</div><div class="cov-date">7 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge po">Press office</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Breville (brand)</span></div><div>Audience 25.8K</div></div>
+        </div>
+
+        <div class="section-h">Tier 3 &amp; passive mentions</div>
+
+        <div class="cov-card t3">
+          <div class="cov-top"><div class="cov-outlet">AI grocery story — passive cluster (×4 outlets)</div><div class="cov-date">4 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t3">Tier 3</span><span class="badge po">Press office</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Breville (brand)</span></div><div>Combined audience ~192K · Same article, 4 outlets</div></div>
+          <div class="cluster-note">FutureFive AU · IT Brief AU · B&amp;T · eCommerce News Australia — Woolworths/Coles AI visibility story; Breville cited incidentally. Low SOV value.</div>
+        </div>
+
+        <div class="cov-card t3">
+          <div class="cov-top"><div class="cov-outlet">Green Magazine — Alison Page profile</div><div class="cov-date">7 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t3">Tier 3</span><span class="badge po">Press office</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Breville (brand)</span></div><div>Audience 6.8K</div></div>
+        </div>
+
+        <div class="cov-card t3">
+          <div class="cov-top"><div class="cov-outlet">The Condobolin Argus — Happy Mother's Day</div><div class="cov-date">6 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t3">Tier 3</span><span class="badge rr">Roundup &amp; review</span><span class="badge neu">Neutral</span><span class="badge fmt">Print</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express</span></div><div>Audience 2.6K</div></div>
+        </div>
+
+        <div class="section-h">Influencer seeding — 4 pieces</div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">@elizabethhewson</div><div class="cov-date">2 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge npd">NPD launch</span><span class="badge pos">Positive</span><span class="badge fmt">Social</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Bambino Plus — Pomodoro Rosso</span></div><div>39.1K followers · Mother's Day giveaway</div></div>
+        </div>
+
+        <div class="cov-card t3">
+          <div class="cov-top"><div class="cov-outlet">@saturdaynightpasta</div><div class="cov-date">2 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t3">Tier 3</span><span class="badge npd">NPD launch</span><span class="badge pos">Positive</span><span class="badge fmt">Social</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Bambino Plus — Pomodoro Rosso</span></div><div>7.3K followers</div></div>
+        </div>
+
+        <div class="cov-card t3">
+          <div class="cov-top"><div class="cov-outlet">@madeby.mandy (Instagram Reel + TikTok)</div><div class="cov-date">4 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t3">Tier 3</span><span class="badge inf">Influencer seeding</span><span class="badge pos">Positive</span><span class="badge fmt">Social</span><span class="badge plc">Feature</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express</span></div><div>27.9K / 6.8K · Dated Apr, appearing in this report</div></div>
+        </div>
+
+      </div>
+      <button class="add-coverage-btn" onclick="openAddCoverage('apac')">+ Add coverage item</button>
+    </div>
+
+    <!-- APAC INSIGHTS -->
+    <div id="apac-insights" class="sub-content">
+      <div class="alert-box"><b>Passive mention cluster:</b> 4 tech/trade outlets all carried the same Woolworths/Coles AI grocery story with a passing Breville brand mention. These contribute minimal weighted SOV — do not include in SLT headline piece counts.</div>
+      <div class="alert-box"><b>Sun-Herald / Sunday Age:</b> The "Mama Bird" Coffee Tamper piece ran in both mastheads — same article, same author. Count as 1 unique editorial piece, 2 placements for reach.</div>
+      <div class="insight-box" style="border-left-color:var(--apac)"><div class="insight-title">🎁 Mother's Day driving T1 broadcast and gifting coverage</div><div class="insight-body">The gifting window delivered the week's strongest single APAC piece — Channel 9 Weekend Today broadcast (T1, 908K) with Eye Q Toaster, Kettle and Bambino. 9Now and the AFR Spend section also ran gifting-adjacent content. Window closes this weekend.</div></div>
+      <div class="insight-box" style="border-left-color:var(--npd-text)"><div class="insight-title">🔴 Pomodoro Rosso NPD — early momentum, strong pipeline</div><div class="insight-body">Pomodoro Rosso appears in 3 pieces this week: AFR (T1), @elizabethhewson (T2 influencer), @saturdaynightpasta (T3). The AFR Spend placement is the standout — T1 national press for a colourway NPD is strong. Pipeline has 3 more confirmed Pomodoro placements (Vogue Living, Sunday Life, Gourmet Traveller) — if those land next week, this will be a well-distributed launch.</div></div>
+      <div class="insight-box" style="border-left-color:var(--apac)"><div class="insight-title">📰 CHOICE Magazine — high-credibility coffee category signal</div><div class="insight-body">The "Full of Beans" grinder feature in CHOICE (T1, 400K print) is purchase-intent editorial validation for three Breville grinder SKUs. CHOICE readership is highly conversion-oriented. Clean BRG territory — no competitor context.</div></div>
+      <div class="insight-box"><div class="insight-title">📊 Quality vs volume</div><div class="insight-body">21 pieces, but 10 are T3 or passive mentions (combined weighted SOV ~60 pts). The 4 T1 pieces alone contribute ~480 weighted SOV points. News.com.au at 11.6M is the biggest reach piece but lower editorial authority than AFR or Channel 9 — use reach and SOV metrics separately in SLT reporting.</div></div>
+      <div class="insight-box"><div class="insight-title">🌐 Cross-market thread: Smart Oven category</div><div class="insight-body">Smart Oven Air Fryer Pro is this week's standout in NA (5 pieces, 4×T1). In APAC the Smart Oven Pro appeared in Nine.com.au. The oven/air fryer category is performing across both markets simultaneously — a global narrative opportunity.</div></div>
+    </div>
+
+    <!-- APAC PRODUCTS -->
+    <div id="apac-products" class="sub-content">
+      <table class="prod-table">
+        <thead><tr><th style="width:34%">Product</th><th style="width:20%">Coverage type</th><th>Pieces</th><th>T1</th><th>Combined audience</th></tr></thead>
+        <tbody>
+          <tr><td>Bambino Plus (incl. Pomodoro Rosso)</td><td><span class="badge npd">NPD launch</span></td><td>4</td><td>2</td><td>~12.9M</td></tr>
+          <tr><td>Eye Q Toaster / Kettle</td><td><span class="badge rr">Roundup &amp; review</span></td><td>3</td><td>2</td><td>~13.4M</td></tr>
+          <tr><td>Barista Express</td><td><span class="badge inf">Influencer seeding</span></td><td>2</td><td>0</td><td>~35K social</td></tr>
+          <tr><td>Coffee Tamper</td><td><span class="badge po">Press office</span></td><td>2</td><td>0</td><td>768K</td></tr>
+          <tr><td>Smart Grinder Pro / Dose Control / Coffee &amp; Spice</td><td><span class="badge po">Press office</span></td><td>1</td><td>1</td><td>400K</td></tr>
+          <tr><td>Smart Oven Pro</td><td><span class="badge rr">Roundup &amp; review</span></td><td>1</td><td>0</td><td>4.6M</td></tr>
+          <tr><td>Smart Temp Slow Cooker</td><td><span class="badge po">Press office</span></td><td>1</td><td>0</td><td>215K</td></tr>
+          <tr><td>Smart Waffle / No Mess Waffle</td><td><span class="badge rr">Roundup &amp; review</span></td><td>1</td><td>0</td><td>235K</td></tr>
+          <tr><td>Luxe Crystal Kettle &amp; Toaster</td><td><span class="badge rr">Roundup &amp; review</span></td><td>1</td><td>1</td><td>11.6M</td></tr>
+          <tr><td>Breville (brand mention only)</td><td><span class="badge po">Press office</span></td><td>5</td><td>0</td><td>~200K</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- APAC PIPELINE -->
+    <div id="apac-pipeline" class="sub-content">
+      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px;line-height:1.6">Confirmed coverage still to land — 28 items. High-priority T1 outlets highlighted in blue.</p>
+      <div class="section-h" style="margin-top:0">High priority — T1 outlets</div>
+      <div class="pipeline-list">
+        <div class="pipe-item"><div class="pipe-dot t1"></div><div class="pipe-text"><b>Vogue Living</b> — Eye Q Toaster · Pomodoro Rosso range</div></div>
+        <div class="pipe-item"><div class="pipe-dot t1"></div><div class="pipe-text"><b>Gourmet Traveller</b> — Pomodoro Rosso range</div></div>
+        <div class="pipe-item"><div class="pipe-dot t1"></div><div class="pipe-text"><b>Sunday Life</b> — Pomodoro Rosso range</div></div>
+        <div class="pipe-item"><div class="pipe-dot t1"></div><div class="pipe-text"><b>Better Homes and Gardens</b> — InFizz · Smart Air Viral Purifier &amp; Barista Express · Various air fryers</div></div>
+        <div class="pipe-item"><div class="pipe-dot t1"></div><div class="pipe-text"><b>9 Honey (digital)</b> — Oracle Dual Boiler</div></div>
+      </div>
+      <div class="section-h">T2 &amp; trade outlets</div>
+      <div class="pipeline-list">
+        <div class="pipe-item"><div class="pipe-dot"></div><div class="pipe-text"><b>Home Beautiful</b> — Eye Q Toaster</div></div>
+        <div class="pipe-item"><div class="pipe-dot"></div><div class="pipe-text"><b>Country Style</b> — Eye Q Toaster · Fast Slow Pro</div></div>
+        <div class="pipe-item"><div class="pipe-dot"></div><div class="pipe-text"><b>Man of Many</b> — Luxe Brewer</div></div>
+        <div class="pipe-item"><div class="pipe-dot"></div><div class="pipe-text"><b>The AU Review</b> — Oracle Dual Boiler digital review</div></div>
+        <div class="pipe-item"><div class="pipe-dot"></div><div class="pipe-text"><b>9 Product Reviews</b> — Eye Q Toaster review</div></div>
+        <div class="pipe-item"><div class="pipe-dot"></div><div class="pipe-text"><b>Appliance Retailer</b> — benchtop cooking feature · food prep feature · MICE &amp; Pomodoro Rosso · Smart Air Purifier &amp; Airrounder Max</div></div>
+        <div class="pipe-item"><div class="pipe-dot"></div><div class="pipe-text"><b>Scope Appliances</b> — Barista Express &amp; Oracle Dual Boiler</div></div>
+      </div>
+      <div class="section-h">Influencer seeding — confirmed</div>
+      <div class="pipeline-list">
+        <div class="pipe-item"><div class="pipe-dot inf"></div><div class="pipe-text">@elizabethhewson — Kitchen Wizz</div></div>
+        <div class="pipe-item"><div class="pipe-dot inf"></div><div class="pipe-text">@michael_weldon — Shake Creation</div></div>
+        <div class="pipe-item"><div class="pipe-dot inf"></div><div class="pipe-text">@cecilevadas — Barista Express Impress</div></div>
+        <div class="pipe-item"><div class="pipe-dot inf"></div><div class="pipe-text">@misstrixiedrinkstea — Barista Touch Impress</div></div>
+        <div class="pipe-item"><div class="pipe-dot inf"></div><div class="pipe-text">@coffee_sydney · @gracegibson_ · @oliviawarden3 · @tirtastyadi · @beccycambridge · @heidimoustafa · @boybabsky — Barista Express (×7)</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== NORTH AMERICA ===== -->
+  <section id="tab-na" class="tab-content">
+    <div class="metrics-bar">
+      <div class="metric-card accent-na"><div class="metric-label">Total pieces</div><div class="metric-value editable-value" data-key="na.pieces">41</div><div class="metric-sub">32 unique editorial</div></div>
+      <div class="metric-card accent-na"><div class="metric-label">Tier 1</div><div class="metric-value editable-value" data-key="na.t1">18</div></div>
+      <div class="metric-card accent-na"><div class="metric-label">Weighted SOV %</div><div class="metric-value editable-value" data-key="na.sov">61%</div></div>
+      <div class="metric-card accent-na"><div class="metric-label">Total audience</div><div class="metric-value editable-value" data-key="na.reach">201M</div></div>
+      <div class="metric-card accent-na"><div class="metric-label">NPD pieces</div><div class="metric-value editable-value" data-key="na.npd">0</div></div>
+      <div class="metric-card accent-na"><div class="metric-label">Influencer pieces</div><div class="metric-value editable-value" data-key="na.inf">4</div></div>
+    </div>
+    <div class="sub-nav">
+      <button class="sub-tab active" data-sub="na-feed">Coverage feed</button>
+      <button class="sub-tab" data-sub="na-insights">Insights</button>
+      <button class="sub-tab" data-sub="na-products">Products</button>
+    </div>
+
+    <!-- NA FEED -->
+    <div id="na-feed" class="sub-content active">
+      <div class="section-h" style="margin-top:0">Tier 1 — 16 pieces</div>
+      <div class="coverage-list" id="na-feed-list">
+
+        <div class="cov-card t1" style="border-left-color:#BA7517">
+          <div class="cov-top"><div class="cov-outlet">Forbes Vetted — 46 Best Wedding Registry Ideas</div><div class="cov-date">This week</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span><span class="badge" style="background:#FAEEDA;color:#633806">⭐ Best overall pick</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid #BA7517">
+            Named as the recommended toaster upgrade — "best overall pick on our Best Toasters list." Callout of six settings, browning control dial, and streamlined design that "looks pretty on any kitchen counter."
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Toast Select Luxe</span></div><div>UVPM 55.2M · Largest reach piece in dashboard</div></div>
+        </div>
+
+        <div class="cov-card t1" style="border-left-color:#BA7517">
+          <div class="cov-top"><div class="cov-outlet">Good Housekeeping — Best Immersion Blenders (tested 15 models)</div><div class="cov-date">This week</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span><span class="badge" style="background:#FAEEDA;color:#633806">⭐ Best overall pick</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid #BA7517">
+            "Best Overall" in a tested 15-model roundup. Praised for 15 speed settings, notched blade guard that minimises suction and splatter, comfortable rubber handle, and dishwasher-safe attachments including a 3-cup food processor and whisk. Top performer in chopping tests.
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Control Grip Immersion Blender</span></div><div>UVPM 21.3M · Second Good Housekeeping T1 placement this week</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Good Housekeeping — Coffee kitchen design</div><div class="cov-date">6 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express Impress</span></div><div>Audience 17.3M</div></div>
+        </div>
+
+        <div class="cov-card t1" style="border-left-color:#BA7517">
+          <div class="cov-top"><div class="cov-outlet">Serious Eats — "Back Into a Coffee Drinker" (Ashlee Redger)</div><div class="cov-date">This week</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge po">Press office</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span><span class="badge" style="background:#FAEEDA;color:#633806">⭐ Editorial endorsement</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid #BA7517">
+            Full feature review crediting the Barista Touch Impress for turning writer Ashlee Redger "back into a coffee drinker." Highlights touchscreen with pre-set drinks, built-in grinder, automatic milk frother, cold brew capability, and café-quality lattes, cappuccinos and iced espresso. Result of proactive sample coordination.
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Touch Impress</span></div><div>Audience 10.4M · <a href="https://www.seriouseats.com/breville-barista-touch-impress-espresso-maker-review-11929111" target="_blank" style="color:var(--color-text-secondary)">Read on Serious Eats ↗</a></div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Forbes — How to create the ultimate bachelor pad (Terri Williams)</div><div class="cov-date">This week</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge po">Press office</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid var(--color-border-mid)">
+            Lifestyle inclusion highlighting the Barista Touch Impress's "gorgeous" colour options, integrated grinder with 30 settings, touchscreen with tutorials, and cold brew capabilities. New lifestyle/aspirational editorial category for BRG. Result of proactive sample coordination with writer Terri Williams.
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Touch Impress</span></div><div><a href="https://www.forbes.com/sites/terriwilliams/2024/01/31/single-male-home-buyer-heres-how-to-create-the-ultimate-bachelor-pad/" target="_blank" style="color:var(--color-text-secondary)">Read on Forbes ↗</a></div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Mashable — Barista Express Impress deal</div><div class="cov-date">5 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express Impress</span></div><div>Audience 11.5M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Serious Eats — Editor's essential kitchen tools</div><div class="cov-date">4 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Oven Air Fryer Pro</span></div><div>Audience 10.4M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">New York Post — Mother's Day gift deals</div><div class="cov-date">4 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Oven Air Fryer Pro</span><span class="ptag">Milk Café Frother</span><span class="ptag">Handy Mix Scraper</span></div><div>Audience 35.1M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Food &amp; Wine — Mother's Day editor picks</div><div class="cov-date">5 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Oven Air Fryer Pro</span></div><div>Audience 9M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Food &amp; Wine — Crate &amp; Barrel sale (May)</div><div class="cov-date">7 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express Impress</span></div><div>Audience 9M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Food &amp; Wine — Crate &amp; Barrel sale (Apr)</div><div class="cov-date">28 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express</span><span class="ptag">Bambino Plus</span><span class="ptag">Barista Touch Impress</span><span class="ptag">Next Premium Vertuo</span></div><div>Audience 9M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Food &amp; Wine — Fellow espresso review</div><div class="cov-date">7 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge po">Press office</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span><span class="badge comp">Competitor context</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express</span></div><div>Audience 9M · Fellow espresso machine lead</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">EatingWell — Breville Smart Oven sale</div><div class="cov-date">7 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Oven Compact</span><span class="ptag">Smart Oven Air Fryer Pro</span><span class="ptag">Barista Express</span><span class="ptag">Bambino Plus</span><span class="ptag">Juice Fountain</span></div><div>Audience 12M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">New York Magazine / Strategist — Impulse Labs review</div><div class="cov-date">30 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge comp">Competitor lead</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Control Freak</span></div><div>Audience 5.1M · Impulse Labs induction cooktop review — BRG secondary</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Town &amp; Country — Best graduation gifts</div><div class="cov-date">1 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Nespresso Vertuo by Breville</span></div><div>Audience 3.5M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">AOL.com — Last-minute Mother's Day gifts</div><div class="cov-date">27 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Joule Turbo Sous Vide</span></div><div>Audience 23.7M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">BuzzFeed — Sur La Table picks</div><div class="cov-date">2 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Bambino</span></div><div>Audience 25.8M</div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">BuzzFeed — Amazon deals (×2 articles)</div><div class="cov-date">4 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express</span></div><div>Audience 25.8M · 2 separate articles, same outlet</div></div>
+        </div>
+
+        <div class="section-h">Tier 2 — 8 pieces</div>
+
+        <div class="cov-card t2" style="border-left-color:#1D9E75">
+          <div class="cov-top"><div class="cov-outlet">Taste of Home — 7 Best Coffee Makers of 2026</div><div class="cov-date">This week</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span><span class="badge" style="background:#EAF3DE;color:#27500A">⭐ Best automatic espresso</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid #1D9E75">
+            Named "Best Automatic Espresso Machine." Tester Nicole Doster praised the intuitive touchscreen: "What impressed me most was the touchscreen… the step-by-step instructions made setup seamless." Highlights fully automated grinding, dosing, tamping and frothing, hot and cold drink support, and deep customisation. "For serious coffee lovers, the performance and versatility justify the price."
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Oracle Jet</span></div><div>UVPM 9.1M</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">Chowhound — 17 Last-Minute Mother's Day Picks</div><div class="cov-date">This week</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid var(--color-border-mid)">
+            Gifting inclusion: "Yes, a sous vide is totally worth it" — highlights tender steaks, homemade extracts, elevated seafood, and Amazon Prime fast delivery as a last-minute Mother's Day gift.
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Joule Turbo Sous Vide</span></div><div>UVPM 3.9M · Mother's Day gifting context</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">Gizmodo — Nespresso Vertuo deal</div><div class="cov-date">27 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Nespresso Vertuo by Breville</span></div><div>Audience 7.8M · Deal mention</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">The Takeout — High-tech kitchen gadgets</div><div class="cov-date">4 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Oven Air Fryer Pro</span></div><div>Audience 2.2M</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">CyberGuy — Best Amazon deals</div><div class="cov-date">28 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Joule Smart Oven Air Fryer Pro</span></div><div>Audience 216K</div></div>
+        </div>
+
+        <div class="cov-card t2" style="border-left-color:#BA7517">
+          <div class="cov-top"><div class="cov-outlet">Men's Journal — YouTube review (Stinson Carter)</div><div class="cov-date">3 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge po">Press office</span><span class="badge pos">Positive</span><span class="badge fmt">YouTube</span><span class="badge plc">Feature</span><span class="badge" style="background:#FAEEDA;color:#633806">⭐ Editorial endorsement</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid #BA7517">
+            Writer Stinson Carter — having tested many Breville machines — says none command the countertop quite like the Oracle Dual Boiler. Calls automatic tamping and grinding "flawless," describes the steam wand as the best automated frother he has tested, and concludes it is "undoubtedly their best" machine despite being the most expensive.
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Oracle Dual Boiler</span></div><div>Audience 66K · <a href="https://www.youtube.com/watch?v=wBPcQh0YGfA&t=39s" target="_blank" style="color:var(--color-text-secondary)">Watch on YouTube ↗</a></div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">Yahoo Shopping — Best coffee makers 2026</div><div class="cov-date">27 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Oracle Jet</span></div><div>Audience 1.1M</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">Yahoo Shopping — GreenPan ice cream</div><div class="cov-date">7 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Smart Scoop</span></div><div>Audience 1.1M</div></div>
+        </div>
+
+        <div class="section-h">Influencer seeding — 4 pieces</div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">@jules.jacobson</div><div class="cov-date">2 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge inf">Influencer seeding</span><span class="badge pos">Positive</span><span class="badge fmt">Social</span><span class="badge plc">Feature</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Touch Impress</span></div><div>Follower count unconfirmed</div></div>
+        </div>
+
+        <div class="cov-card t2">
+          <div class="cov-top"><div class="cov-outlet">@chelseajanie (×2 posts)</div><div class="cov-date">5 &amp; 8 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge inf">Influencer seeding</span><span class="badge pos">Positive</span><span class="badge fmt">Social</span><span class="badge plc">Feature</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Touch Impress</span></div><div>2 posts this week · Follower count unconfirmed</div></div>
+        </div>
+
+        <div class="cov-card t3">
+          <div class="cov-top"><div class="cov-outlet">@redcurrantbakery</div><div class="cov-date">7 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t3">Tier 3</span><span class="badge inf">Influencer seeding</span><span class="badge pos">Positive</span><span class="badge fmt">Social</span><span class="badge plc">Feature</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Oracle Dual Boiler</span></div><div>Follower count unconfirmed</div></div>
+        </div>
+
+        <div class="section-h">Tier 3 — McClatchy / Bargain Hunter syndication (×9 outlets)</div>
+
+        <div class="cov-card t3">
+          <div class="cov-top"><div class="cov-outlet">McClatchy / Bargain Hunter — 9 local outlets</div><div class="cov-date">5 May 2026</div></div>
+          <div class="cov-badges"><span class="badge t3">Tier 3</span><span class="badge rr">Roundup &amp; review</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Barista Express</span></div><div>Combined audience ~5.9M · Same article across 9 outlets</div></div>
+          <div class="cluster-note">Miami Herald · Hilton Head Island Packet · Lexington Herald Leader · Macon Telegraph · Merced Sun-Star · Modesto Bee · Myrtle Beach Sun News · Rock Hill Herald · The Olympian</div>
+        </div>
+
+      </div>
+      <button class="add-coverage-btn" onclick="openAddCoverage('na')">+ Add coverage item</button>
+    </div>
+
+    <!-- NA INSIGHTS -->
+    <div id="na-insights" class="sub-content">
+      <div class="insight-box" style="border-left-color:#BA7517;background:#FEFAF4">
+        <div class="insight-title">⭐ Forbes Vetted — Toast Select Luxe, "best overall" toaster · 55.2M UVPM</div>
+        <div class="insight-body">The single highest-reach piece in the entire dashboard this week. Forbes Vetted named the Toast Select Luxe as the recommended toaster upgrade and "best overall pick" from their Best Toasters list — unprompted editorial endorsement in a wedding registry context. Wedding registry placements are high purchase-intent (gifting decisions with long consideration windows). This is a new editorial category for the Toast range and worth briefing agency to pursue further.</div>
+      </div>
+      <div class="insight-box" style="border-left-color:#BA7517;background:#FEFAF4">
+        <div class="insight-title">⭐ Good Housekeeping — Control Grip "Best Overall" immersion blender · 21.3M UVPM</div>
+        <div class="insight-body">Second Good Housekeeping T1 placement this week (alongside the earlier Barista Express Impress coffee design piece). "Best Overall" in a 15-model tested roundup — the most credible placement type in the category. Praised for 15 speed settings, blade guard design, comfort, and attachments. Good Housekeeping "Best Overall" carries strong retail conversion influence. Flag to SLT alongside Forbes Vetted as a double appliance win this week.</div>
+      </div>
+      <div class="insight-box" style="border-left-color:#1D9E75">
+        <div class="insight-title">☕ Taste of Home — Oracle Jet "Best Automatic Espresso Machine" · 9.1M UVPM</div>
+        <div class="insight-body">Named best in category in a tested coffee maker roundup. Tester Nicole Doster's personal praise of the touchscreen setup experience adds a human endorsement layer beyond standard category win language. Oracle Jet now appearing in both NA (Taste of Home, Yahoo Shopping) and APAC (Yahoo Shopping) — a cross-market thread building quietly without NPD classification.</div>
+      </div>
+        <div class="insight-body">Writer Ashlee Redger credits the Barista Touch Impress with turning her "back into a coffee drinker" — a personal conversion narrative in a T1 outlet with 10.4M audience. Result of proactive sample coordination. Two consecutive weeks of Serious Eats T1 coverage (Smart Oven Air Fryer Pro last week, Barista Touch Impress this week) — the relationship with this outlet is in excellent shape. Flag to SLT.</div>
+      </div>
+      <div class="insight-box" style="border-left-color:#BA7517;background:#FEFAF4">
+        <div class="insight-title">⭐ Standout — Oracle Dual Boiler, Men's Journal (Stinson Carter)</div>
+        <div class="insight-body">Experienced reviewer Stinson Carter, having tested many Breville machines, concludes the Oracle Dual Boiler is "undoubtedly their best" and that none "command the countertop quite like this one." Calls the automatic tamping and grinding "flawless" and the steam wand the best automated frother he has tested. Audience modest (66K) but editorial authority is disproportionate — unsolicited, experienced-reviewer endorsement. Consider cultivating Carter as an ongoing voice for the premium coffee tier.</div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">🏠 Forbes — new lifestyle editorial category for Barista Touch Impress</div>
+        <div class="insight-body">Forbes "ultimate bachelor pad" inclusion is a new aspirational home design angle for BRG in NA — outside the usual kitchen/food vertical. The callout of "gorgeous colour options" signals the design story is landing beyond the coffee category. Worth briefing agency on whether more lifestyle/home design pitching is being pursued for the Touch Impress range.</div>
+      </div>
+      <div class="insight-box" style="border-left-color:var(--na)">
+        <div class="insight-title">☕ Barista Touch Impress — 5 NA pieces this week across formats</div>
+        <div class="insight-body">Serious Eats (T1 feature), Forbes (T1 inclusion), Food &amp; Wine Crate &amp; Barrel (T1), @jules.jacobson (influencer seeding), @chelseajanie ×2 (influencer seeding). Both T1 features resulted from proactive press coordination. Strong always-on performance for an established SKU — comparable reach and quality to an NPD launch without the NPD classification.</div>
+      </div>
+      <div class="alert-box"><b>Influencer tier gap:</b> @jules.jacobson, @chelseajanie, @redcurrantbakery have no follower counts in the report. Tier and weighted SOV for these 4 pieces is provisional. Request from agency urgently.</div>
+      <div class="alert-box"><b>Syndication note for SLT:</b> 9 of the original 37 pieces are the same McClatchy article across local outlets. Unique editorial count is 28. Use 28 for headline metrics.</div>
+      <div class="alert-box"><b>Nespresso / Breville co-branding:</b> Nespresso Vertuo appeared in Gizmodo and Town &amp; Country as Nespresso-led stories. Confirm with agency whether these count toward BRG SOV or should be treated as Nespresso coverage.</div>
+      <div class="warn-box"><b>Competitor flag — NY Mag/Strategist:</b> Control Freak mentioned in an Impulse Labs induction cooktop review (Apr 30). BRG appeared as benchmark, not lead. Monitor Impulse Labs' editorial momentum in premium kitchen space.</div>
+      <div class="insight-box" style="border-left-color:var(--na)"><div class="insight-title">🔥 Smart Oven Air Fryer Pro — always-on editorial star</div><div class="insight-body">5 pieces, 4×T1 (Serious Eats, Food &amp; Wine, New York Post, EatingWell). No seeding required. Consistent unsolicited editorial pull across food and lifestyle verticals — the strongest always-on brand authority signal in the report.</div></div>
+      <div class="insight-box"><div class="insight-title">🎁 Mother's Day and gifting window</div><div class="insight-body">AOL (23.7M), Food &amp; Wine Mother's Day, Town &amp; Country graduation gifts — gifting context is driving volume and reach. Commercial window closes this weekend; expect gifting hook to drop next report.</div></div>
+      <div class="insight-box"><div class="insight-title">📊 Quality vs volume</div><div class="insight-body">16 T1 pieces now lead the week. The 9 T3 syndicated pieces contribute roughly the same SOV as one mid-tier T2 placement. NA's raw audience is inflated by high-reach aggregators (NY Post 35M, BuzzFeed 25.8M, AOL 23.7M) — use reach and editorial credibility metrics separately in SLT reporting.</div></div>
+    </div>
+
+    <!-- NA PRODUCTS -->
+    <div id="na-products" class="sub-content">
+      <table class="prod-table">
+        <thead><tr><th style="width:34%">Product</th><th style="width:20%">Coverage type</th><th>Pieces</th><th>T1</th><th>Combined audience</th></tr></thead>
+        <tbody>
+          <tr><td>Toast Select Luxe</td><td><span class="badge rr">Roundup &amp; review</span></td><td>1</td><td>1</td><td>55.2M</td></tr>
+          <tr><td>Control Grip Immersion Blender</td><td><span class="badge rr">Roundup &amp; review</span></td><td>1</td><td>1</td><td>21.3M</td></tr>
+          <tr><td>Smart Oven Air Fryer Pro</td><td><span class="badge rr">Roundup &amp; review</span></td><td>5</td><td>4</td><td>~68M</td></tr>
+          <tr><td>Barista Touch Impress</td><td><span class="badge po">Press office</span></td><td>5</td><td>2</td><td>~20M + social</td></tr>
+          <tr><td>Barista Express (incl. Impress)</td><td><span class="badge rr">Roundup &amp; review</span></td><td>14</td><td>4</td><td>~110M</td></tr>
+          <tr><td>Bambino / Bambino Plus</td><td><span class="badge rr">Roundup &amp; review</span></td><td>3</td><td>2</td><td>~43M</td></tr>
+          <tr><td>Joule Turbo Sous Vide</td><td><span class="badge rr">Roundup &amp; review</span></td><td>1</td><td>1</td><td>23.7M</td></tr>
+          <tr><td>Oracle Dual Boiler</td><td><span class="badge po">Press office</span></td><td>2</td><td>0</td><td>~66K + social</td></tr>
+          <tr><td>Oracle Jet</td><td><span class="badge rr">Roundup &amp; review</span></td><td>2</td><td>0</td><td>~10.2M</td></tr>
+          <tr><td>Joule Turbo Sous Vide</td><td><span class="badge rr">Roundup &amp; review</span></td><td>2</td><td>1</td><td>~27.6M</td></tr>
+          <tr><td>Nespresso Vertuo by Breville</td><td><span class="badge po">Press office</span></td><td>2</td><td>1</td><td>~11.3M</td></tr>
+          <tr><td>Control Freak</td><td><span class="badge comp">Competitor context</span></td><td>1</td><td>1</td><td>5.1M</td></tr>
+          <tr><td>Smart Scoop</td><td><span class="badge rr">Roundup &amp; review</span></td><td>1</td><td>0</td><td>1.1M</td></tr>
+          <tr><td>Juice Fountain / Compact</td><td><span class="badge rr">Roundup &amp; review</span></td><td>1</td><td>1</td><td>12M</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== UK (placeholder) ===== -->
+  <section id="tab-uk" class="tab-content">
+    <div style="text-align:center;padding:60px 20px;color:var(--color-text-secondary)">
+      <div style="font-size:32px;margin-bottom:12px">🇬🇧</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;color:var(--color-text-primary)">UK coverage not yet loaded</div>
+      <div style="font-size:13px;line-height:1.6">Paste your weekly UK agency report into Claude and it will populate this tab automatically.</div>
+    </div>
+  </section>
+
+  <!-- ===== EMEA (placeholder) ===== -->
+  <section id="tab-emea" class="tab-content">
+    <div style="text-align:center;padding:60px 20px;color:var(--color-text-secondary)">
+      <div style="font-size:32px;margin-bottom:12px">🇪🇺</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;color:var(--color-text-primary)">EMEA coverage not yet loaded</div>
+      <div style="font-size:13px;line-height:1.6">Paste your weekly EMEA agency report into Claude and it will populate this tab automatically.</div>
+    </div>
+  </section>
+
+  <!-- ===== LELIT ===== -->
+  <section id="tab-lelit" class="tab-content">
+    <div class="metrics-bar">
+      <div class="metric-card accent-lelit"><div class="metric-label">Total pieces</div><div class="metric-value editable-value" data-key="lelit.pieces">7</div><div class="metric-sub">Feb – Apr 2026</div></div>
+      <div class="metric-card accent-lelit"><div class="metric-label">Tier 1</div><div class="metric-value editable-value" data-key="lelit.t1">5</div></div>
+      <div class="metric-card accent-lelit"><div class="metric-label">Weighted SOV %</div><div class="metric-value editable-value" data-key="lelit.sov">82%</div></div>
+      <div class="metric-card accent-lelit"><div class="metric-label">Total reach</div><div class="metric-value editable-value" data-key="lelit.reach">137M</div></div>
+      <div class="metric-card accent-lelit"><div class="metric-label">MaraX pieces</div><div class="metric-value editable-value" data-key="lelit.marax">5</div></div>
+      <div class="metric-card accent-lelit"><div class="metric-label">Victoria pieces</div><div class="metric-value editable-value" data-key="lelit.victoria">2</div></div>
+    </div>
+    <div class="sub-nav">
+      <button class="sub-tab active" data-sub="lelit-feed">Coverage feed</button>
+      <button class="sub-tab" data-sub="lelit-insights">Insights</button>
+      <button class="sub-tab" data-sub="lelit-products">Products</button>
+    </div>
+
+    <!-- LELIT FEED -->
+    <div id="lelit-feed" class="sub-content active">
+      <div class="section-h" style="margin-top:0">Tier 1 — 5 pieces</div>
+      <div class="coverage-list" id="lelit-feed-list">
+
+        <div class="cov-card t1" style="border-left-color:var(--lelit)">
+          <div class="cov-top"><div class="cov-outlet">Forbes — Best Espresso Machines</div><div class="cov-date">21 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span><span class="badge" style="background:#FDECEA;color:#7B1E1E">⭐ Category inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Victoria</span></div><div>UVPM 55.2M · <a href="https://www.forbes.com/sites/forbes-personal-shopper/article/best-espresso-machine/" target="_blank" style="color:var(--color-text-secondary)">Read on Forbes ↗</a></div></div>
+        </div>
+
+        <div class="cov-card t1" style="border-left-color:var(--lelit)">
+          <div class="cov-top"><div class="cov-outlet">Good Housekeeping — Best Espresso Machines</div><div class="cov-date">20 Mar 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span><span class="badge" style="background:#FDECEA;color:#7B1E1E">⭐ Best Manual</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid var(--lelit)">
+            Named "Best Manual Espresso Machine" in Good Housekeeping's tested roundup — highest-credibility placement type for the manual espresso category.
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">MaraX</span></div><div>UVPM 17.3M · <a href="https://www.goodhousekeeping.com/appliances/coffee-maker-reviews/g29069348/best-espresso-machines/" target="_blank" style="color:var(--color-text-secondary)">Read on Good Housekeeping ↗</a></div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Serious Eats — Best Espresso Machines</div><div class="cov-date">18 Feb 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">MaraX</span></div><div>UVPM 10.4M · <a href="https://www.seriouseats.com/best-espresso-machines-5185482" target="_blank" style="color:var(--color-text-secondary)">Read on Serious Eats ↗</a></div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Consumer Reports — Best Espresso Machines</div><div class="cov-date">5 Feb 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span><span class="badge" style="background:#FDECEA;color:#7B1E1E">⭐ Best for Enthusiasts</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid var(--lelit)">
+            Named "Best for Enthusiasts" — Consumer Reports is the highest-authority tested roundup in the US. Category win positions Victoria as the premium enthusiast choice.
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">Victoria</span></div><div>UVPM 8M · <a href="https://www.consumerreports.org/appliances/coffee-makers/best-espresso-machines-a1118374614/#otl-product-1450" target="_blank" style="color:var(--color-text-secondary)">Read on Consumer Reports ↗</a></div></div>
+        </div>
+
+        <div class="cov-card t1">
+          <div class="cov-top"><div class="cov-outlet">Bon Appétit — Best Espresso Machines</div><div class="cov-date">20 Mar 2026</div></div>
+          <div class="cov-badges"><span class="badge t1">Tier 1</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Inclusion</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">MaraX</span></div><div>UVPM 4.1M · <a href="https://www.bonappetit.com/story/best-espresso-machines" target="_blank" style="color:var(--color-text-secondary)">Read on Bon Appétit ↗</a></div></div>
+        </div>
+
+        <div class="section-h">Tier 2 — 1 piece</div>
+
+        <div class="cov-card t2" style="border-left-color:var(--lelit)">
+          <div class="cov-top"><div class="cov-outlet">Yahoo Shopping — Best Espresso Machines (3 weeks tasting)</div><div class="cov-date">25 Mar 2026</div></div>
+          <div class="cov-badges"><span class="badge t2">Tier 2</span><span class="badge rr">Roundup &amp; review</span><span class="badge pos">Positive</span><span class="badge fmt">Online</span><span class="badge plc">Feature</span><span class="badge" style="background:#FDECEA;color:#7B1E1E">⭐ Best Manual</span></div>
+          <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.6;margin:8px 0;padding:8px 12px;background:var(--color-surface);border-radius:4px;border-left:2px solid var(--lelit)">
+            Named "Best Manual Espresso Machine" in a three-week hands-on tasting test. Yahoo Shopping's 41.9M UVPM makes this the highest-reach LELIT placement in the dashboard.
+          </div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">MaraX</span></div><div>UVPM 41.9M · Highest reach LELIT piece · <a href="https://shopping.yahoo.com/home-garden/kitchen/articles/spent-three-weeks-tasting-espresso-224400889.html" target="_blank" style="color:var(--color-text-secondary)">Read on Yahoo Shopping ↗</a></div></div>
+        </div>
+
+        <div class="section-h">Tier 3 — 1 piece</div>
+
+        <div class="cov-card t3">
+          <div class="cov-top"><div class="cov-outlet">Daily Coffee News — World of Coffee San Diego</div><div class="cov-date">21 Apr 2026</div></div>
+          <div class="cov-badges"><span class="badge t3">Tier 3</span><span class="badge po">Press office</span><span class="badge neu">Neutral</span><span class="badge fmt">Online</span><span class="badge plc">Mention</span></div>
+          <div class="cov-foot"><div class="ptags"><span class="ptag">MaraX3</span></div><div>UVPM 45K · World of Coffee San Diego event coverage · <a href="https://dailycoffeenews.com/2026/04/21/new-home-coffee-equipment-from-world-of-coffee-in-san-diego/" target="_blank" style="color:var(--color-text-secondary)">Read ↗</a></div></div>
+        </div>
+
+      </div>
+      <button class="add-coverage-btn" onclick="openAddCoverage('lelit')">+ Add coverage item</button>
+    </div>
+
+    <!-- LELIT INSIGHTS -->
+    <div id="lelit-insights" class="sub-content">
+      <div class="insight-box" style="border-left-color:var(--lelit);background:#FDF3F2">
+        <div class="insight-title">⭐ MaraX — "Best Manual" across three T1/T2 outlets simultaneously</div>
+        <div class="insight-body">MaraX holds the "Best Manual Espresso Machine" designation across Good Housekeeping (T1, 17.3M), Yahoo Shopping (T2, 41.9M), and an inclusion in Bon Appétit (T1, 4.1M) and Serious Eats (T1, 10.4M) — all within a six-week window. This level of consistent cross-outlet category ownership is exceptional for a specialist brand and positions MaraX as the definitive manual espresso choice in the US market. Flag to SLT as a brand authority milestone.</div>
+      </div>
+      <div class="insight-box" style="border-left-color:var(--lelit);background:#FDF3F2">
+        <div class="insight-title">⭐ Victoria — Forbes + Consumer Reports double win</div>
+        <div class="insight-body">Victoria landed in both Forbes (55.2M, April) and Consumer Reports (8M, February) — two of the highest-authority tested roundup outlets in the US. Consumer Reports' "Best for Enthusiasts" designation is particularly significant as it signals Victoria is reaching the engaged, high-spend hobbyist segment. Combined reach of 63.2M from two placements alone.</div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">📊 Reach vs authority balance</div>
+        <div class="insight-body">Yahoo Shopping (41.9M) is the highest single-reach LELIT piece but carries lower editorial authority than Consumer Reports or Good Housekeeping. Forbes (55.2M) is the rare combination of high reach and high authority. For SLT reporting, lead with Forbes + Consumer Reports for credibility, Yahoo Shopping for reach headline numbers.</div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">🌱 MaraX3 — early trade visibility</div>
+        <div class="insight-body">The MaraX3 appeared in Daily Coffee News at the World of Coffee San Diego — trade press, low reach (45K), but a signal that the new model is building awareness in the enthusiast and trade community ahead of any broader consumer launch. Monitor for follow-up coverage from coffee specialist outlets.</div>
+      </div>
+      <div class="insight-box">
+        <div class="insight-title">🌐 All LELIT coverage is US-market</div>
+        <div class="insight-body">All 7 pieces this period are from US outlets. No APAC, UK or EMEA LELIT coverage in the dashboard yet. If LELIT has regional agency activity in other markets, add those reports to expand the picture.</div>
+      </div>
+    </div>
+
+    <!-- LELIT PRODUCTS -->
+    <div id="lelit-products" class="sub-content">
+      <table class="prod-table">
+        <thead><tr><th style="width:20%">Product</th><th style="width:22%">Coverage type</th><th>Pieces</th><th>T1</th><th>Combined reach</th><th>Best placement</th></tr></thead>
+        <tbody>
+          <tr><td>MaraX</td><td><span class="badge rr">Roundup &amp; review</span></td><td>4</td><td>3</td><td>~73.7M</td><td>Good Housekeeping — Best Manual</td></tr>
+          <tr><td>Victoria</td><td><span class="badge rr">Roundup &amp; review</span></td><td>2</td><td>2</td><td>~63.2M</td><td>Forbes + Consumer Reports</td></tr>
+          <tr><td>MaraX3</td><td><span class="badge po">Press office</span></td><td>1</td><td>0</td><td>45K</td><td>Daily Coffee News — trade mention</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div><!-- /app -->
+
+<!-- HIGHLIGHT MODAL -->
+<div class="modal-backdrop" id="highlight-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-header-title" id="highlight-modal-title">Edit highlight</span>
+      <button class="modal-close" data-close="highlight-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="modal-label">Title</label>
+      <input type="text" id="hl-title-input" placeholder="e.g. Smart Oven lands in Serious Eats">
+      <label class="modal-label">Body</label>
+      <textarea id="hl-body-input" placeholder="Add context, significance, or agency follow-up action…"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" id="hl-clear-btn">Clear</button>
+      <button class="btn btn-sm" id="hl-cancel-btn">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="hl-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD COVERAGE MODAL -->
+<div class="modal-backdrop" id="add-coverage-modal">
+  <div class="modal" style="width:520px">
+    <div class="modal-header">
+      <span class="modal-header-title" id="add-cov-title">Add coverage item</span>
+      <button class="modal-close" data-close="add-coverage-modal">✕</button>
+    </div>
+    <div class="modal-body">
+      <label class="modal-label">Outlet name</label>
+      <input type="text" id="ac-outlet" placeholder="e.g. Vogue Living">
+      <label class="modal-label">Date</label>
+      <input type="text" id="ac-date" placeholder="e.g. 10 May 2026">
+      <label class="modal-label">Products (comma-separated)</label>
+      <input type="text" id="ac-products" placeholder="e.g. Oracle Jet, Barista Express">
+      <label class="modal-label">Audience / reach</label>
+      <input type="text" id="ac-audience" placeholder="e.g. 1.2M">
+      <label class="modal-label">Notes</label>
+      <input type="text" id="ac-notes" placeholder="e.g. Mother's Day gift guide">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" id="ac-cancel-btn">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="ac-save-btn">Add item</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ---- STORAGE KEYS ---- */
+const KEY_HIGHLIGHTS = 'brg_pr_highlights';
+const KEY_OVERRIDES  = 'brg_pr_overrides';
+const KEY_EXTRA_COV  = 'brg_pr_extra_coverage';
+
+function lsGet(k, def) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } }
+function lsSet(k, v)   { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+
+/* ---- STATE ---- */
+let editModeActive = false;
+let adminUnlocked  = false;
+let activePopover  = null;
+
+/* ---- TABS ---- */
+function setupTabs() {
+  document.querySelectorAll('.nav-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+  document.querySelectorAll('.sub-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const subId = btn.dataset.sub;
+      const parent = btn.closest('.tab-content');
+      parent.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+      parent.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(subId).classList.add('active');
+    });
+  });
+}
+
+/* ---- OVERRIDES ---- */
+function getOverrides() { return lsGet(KEY_OVERRIDES, {}); }
+function setOverride(key, val) {
+  const o = getOverrides();
+  o[key] = val;
+  lsSet(KEY_OVERRIDES, o);
+}
+function v(key, def) {
+  const o = getOverrides();
+  return (o[key] !== undefined) ? o[key] : def;
+}
+
+/* ---- RENDER EDITABLE VALUES ---- */
+function applyOverrides() {
+  document.querySelectorAll('.editable-value[data-key]').forEach(el => {
+    const key = el.dataset.key;
+    const o = getOverrides();
+    if (o[key] !== undefined) {
+      if (el.tagName !== 'DIV' && el.tagName !== 'P') {
+        el.textContent = o[key];
+      } else {
+        el.innerHTML = o[key];
+      }
+    }
+  });
+}
+
+/* ---- HIGHLIGHTS ---- */
+function renderHighlights() {
+  const grid = document.getElementById('highlights-grid');
+  const stored = lsGet(KEY_HIGHLIGHTS, {});
+  grid.innerHTML = [1,2,3].map(i => {
+    const slot = stored[i] || {title:'', body:''};
+    const pop = slot.title || slot.body;
+    if (pop) {
+      return `<div class="highlight-card populated" data-slot="${i}">
+        <div class="highlight-eyebrow">Highlight ${i}</div>
+        <div class="highlight-title">${esc(slot.title)}</div>
+        <div class="highlight-body">${esc(slot.body)}</div>
+        <button class="highlight-edit-btn" data-slot="${i}">✏ Edit</button>
+      </div>`;
+    }
+    return `<div class="highlight-card" data-slot="${i}">
+      <div class="highlight-eyebrow">Highlight ${i}</div>
+      <div class="highlight-prompt">Add a highlight via the admin panel</div>
+      <button class="highlight-edit-btn" data-slot="${i}">✏ Edit</button>
+    </div>`;
+  }).join('');
+}
+
+/* ---- EXTRA COVERAGE ---- */
+function renderExtraCoverage() {
+  const extra = lsGet(KEY_EXTRA_COV, {});
+  ['apac','na','uk','emea'].forEach(mkt => {
+    const list = document.getElementById(`${mkt}-feed-list`);
+    if (!list) return;
+    const prev = list.querySelectorAll('.extra-cov-card');
+    prev.forEach(el => el.remove());
+    const items = extra[mkt] || [];
+    items.forEach((item, idx) => {
+      const div = document.createElement('div');
+      div.className = 'cov-card t2 extra-cov-card';
+      div.style.borderStyle = 'dashed';
+      div.innerHTML = `
+        <div class="cov-top"><div class="cov-outlet">${esc(item.outlet)}</div><div class="cov-date">${esc(item.date)}</div></div>
+        <div class="cov-badges"><span class="badge fmt">Added manually</span></div>
+        <div class="cov-foot">
+          <div class="ptags">${(item.products||'').split(',').map(p=>`<span class="ptag">${esc(p.trim())}</span>`).join('')}</div>
+          <div>${esc(item.audience||'')}${item.notes ? ' · '+esc(item.notes) : ''}</div>
+        </div>
+        ${editModeActive ? `<button onclick="removeExtraCov('${mkt}',${idx})" style="margin-top:8px;font-size:11px;color:var(--color-text-secondary);background:none;border:none;cursor:pointer;text-decoration:underline">Remove</button>` : ''}
+      `;
+      list.appendChild(div);
+    });
+  });
+}
+
+function removeExtraCov(mkt, idx) {
+  const extra = lsGet(KEY_EXTRA_COV, {});
+  extra[mkt] = extra[mkt] || [];
+  extra[mkt].splice(idx, 1);
+  lsSet(KEY_EXTRA_COV, extra);
+  renderExtraCoverage();
+}
+
+/* ---- ADD COVERAGE ---- */
+let addCovMarket = null;
+function openAddCoverage(mkt) {
+  addCovMarket = mkt;
+  document.getElementById('add-cov-title').textContent = `Add coverage item — ${mkt.toUpperCase()}`;
+  ['outlet','date','products','audience','notes'].forEach(f => {
+    document.getElementById(`ac-${f}`).value = '';
+  });
+  document.getElementById('add-coverage-modal').classList.add('active');
+}
+
+/* ---- ADMIN / EDIT MODE ---- */
+function setupAdmin() {
+  const gear = document.getElementById('gear-btn');
+  const adminActions = document.getElementById('admin-actions');
+  const enterBtn = document.getElementById('enter-edit-btn');
+  const exitEditBtn = document.getElementById('exit-edit-btn');
+  const exitAdminBtn = document.getElementById('exit-admin-btn');
+  const badge = document.getElementById('editing-badge');
+
+  gear.addEventListener('click', () => {
+    if (!adminUnlocked) {
+      const pw = prompt('Admin password:');
+      if (pw === 'brg2026') {
+        adminUnlocked = true;
+        adminActions.classList.add('active');
+        gear.style.display = 'none';
+      } else if (pw !== null) {
+        alert('Incorrect password.');
+      }
+      return;
+    }
+    adminActions.classList.toggle('active');
+  });
+
+  enterBtn.addEventListener('click', () => {
+    editModeActive = true;
+    enterBtn.style.display = 'none';
+    exitEditBtn.style.display = 'inline-block';
+    badge.classList.add('active');
+    document.body.classList.add('edit-mode');
+    renderExtraCoverage();
+  });
+
+  exitEditBtn.addEventListener('click', () => {
+    editModeActive = false;
+    enterBtn.style.display = 'inline-block';
+    exitEditBtn.style.display = 'none';
+    badge.classList.remove('active');
+    document.body.classList.remove('edit-mode');
+    renderExtraCoverage();
+  });
+
+  exitAdminBtn.addEventListener('click', () => {
+    adminUnlocked = false;
+    editModeActive = false;
+    document.body.classList.remove('edit-mode');
+    badge.classList.remove('active');
+    adminActions.classList.remove('active');
+    enterBtn.style.display = 'inline-block';
+    exitEditBtn.style.display = 'none';
+    gear.style.display = '';
+    renderExtraCoverage();
+  });
+}
+
+/* ---- HIGHLIGHT MODAL ---- */
+function setupHighlightModal() {
+  const modal = document.getElementById('highlight-modal');
+  const titleIn = document.getElementById('hl-title-input');
+  const bodyIn  = document.getElementById('hl-body-input');
+  const saveBtn = document.getElementById('hl-save-btn');
+  const clearBtn= document.getElementById('hl-clear-btn');
+  const cancelBtn=document.getElementById('hl-cancel-btn');
+  const titleEl = document.getElementById('highlight-modal-title');
+  let curSlot = null;
+
+  document.getElementById('highlights-grid').addEventListener('click', e => {
+    const btn = e.target.closest('.highlight-edit-btn');
+    if (!btn || !editModeActive) return;
+    curSlot = btn.dataset.slot;
+    const stored = lsGet(KEY_HIGHLIGHTS, {});
+    const slot = stored[curSlot] || {title:'', body:''};
+    titleIn.value = slot.title || '';
+    bodyIn.value  = slot.body  || '';
+    titleEl.textContent = `Edit highlight ${curSlot}`;
+    modal.classList.add('active');
+    setTimeout(() => titleIn.focus(), 50);
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const stored = lsGet(KEY_HIGHLIGHTS, {});
+    stored[curSlot] = { title: titleIn.value, body: bodyIn.value };
+    lsSet(KEY_HIGHLIGHTS, stored);
+    modal.classList.remove('active');
+    renderHighlights();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    const stored = lsGet(KEY_HIGHLIGHTS, {});
+    delete stored[curSlot];
+    lsSet(KEY_HIGHLIGHTS, stored);
+    titleIn.value = ''; bodyIn.value = '';
+    modal.classList.remove('active');
+    renderHighlights();
+  });
+
+  cancelBtn.addEventListener('click', () => modal.classList.remove('active'));
+}
+
+/* ---- ADD COVERAGE MODAL ---- */
+function setupAddCoverageModal() {
+  const modal = document.getElementById('add-coverage-modal');
+  document.getElementById('ac-save-btn').addEventListener('click', () => {
+    const item = {
+      outlet:   document.getElementById('ac-outlet').value.trim(),
+      date:     document.getElementById('ac-date').value.trim(),
+      products: document.getElementById('ac-products').value.trim(),
+      audience: document.getElementById('ac-audience').value.trim(),
+      notes:    document.getElementById('ac-notes').value.trim(),
+    };
+    if (!item.outlet) { alert('Outlet name is required.'); return; }
+    const extra = lsGet(KEY_EXTRA_COV, {});
+    extra[addCovMarket] = extra[addCovMarket] || [];
+    extra[addCovMarket].push(item);
+    lsSet(KEY_EXTRA_COV, extra);
+    modal.classList.remove('active');
+    renderExtraCoverage();
+  });
+  document.getElementById('ac-cancel-btn').addEventListener('click', () => modal.classList.remove('active'));
+}
+
+/* ---- MODAL CLOSE (backdrop / data-close) ---- */
+function setupModalClose() {
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById(btn.dataset.close).classList.remove('active');
+    });
+  });
+  document.querySelectorAll('.modal-backdrop').forEach(bd => {
+    bd.addEventListener('click', e => {
+      if (e.target === bd) bd.classList.remove('active');
+    });
+  });
+}
+
+/* ---- INLINE VALUE EDITING ---- */
+function closePopover() {
+  if (activePopover) { activePopover.remove(); activePopover = null; }
+}
+
+function setupValueEditing() {
+  document.body.addEventListener('click', e => {
+    if (!editModeActive) return;
+    const tgt = e.target.closest('.editable-value');
+    if (!tgt) {
+      if (activePopover && !e.target.closest('.value-popover')) closePopover();
+      return;
+    }
+    e.stopPropagation();
+    closePopover();
+    const key = tgt.dataset.key;
+    const currentText = tgt.textContent.replace(/[✏\s]+$/, '').trim();
+
+    const pop = document.createElement('div');
+    pop.className = 'value-popover';
+    pop.innerHTML = `
+      <div class="value-popover-header">
+        <span>Edit value</span>
+        <button style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--color-text-secondary)" id="pop-x">✕</button>
+      </div>
+      <input type="text" id="pop-input" value="${esc(currentText)}">
+      <div class="value-popover-actions">
+        <button class="btn btn-sm" id="pop-cancel">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="pop-save">Save</button>
+      </div>
+    `;
+    document.body.appendChild(pop);
+    const rect = tgt.getBoundingClientRect();
+    pop.style.left = (window.scrollX + rect.left) + 'px';
+    pop.style.top  = (window.scrollY + rect.bottom + 6) + 'px';
+    activePopover = pop;
+    const inp = pop.querySelector('#pop-input');
+    setTimeout(() => { inp.focus(); inp.select(); }, 30);
+
+    function save() {
+      let val = inp.value.trim();
+      setOverride(key, val);
+      tgt.textContent = val;
+      closePopover();
+    }
+    function cancel() { closePopover(); }
+    pop.querySelector('#pop-save').addEventListener('click', save);
+    pop.querySelector('#pop-cancel').addEventListener('click', cancel);
+    pop.querySelector('#pop-x').addEventListener('click', cancel);
+    inp.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') save();
+      if (ev.key === 'Escape') cancel();
+    });
+  });
+}
+
+/* ---- EXPORT SNAPSHOT ---- */
+function setupExport() {
+  document.getElementById('export-btn').addEventListener('click', () => {
+    const overrides = lsGet(KEY_OVERRIDES, {});
+    const highlights = lsGet(KEY_HIGHLIGHTS, {});
+    const extraCov   = lsGet(KEY_EXTRA_COV, {});
+
+    // Clone and bake in current state
+    const clone = document.cloneNode(true);
+
+    // Bake overrides into DOM
+    clone.querySelectorAll('.editable-value[data-key]').forEach(el => {
+      const key = el.dataset.key;
+      if (overrides[key] !== undefined) el.textContent = overrides[key];
+    });
+
+    // Remove admin UI
+    const admin = clone.getElementById('admin-actions');
+    if (admin) admin.remove();
+    const gear = clone.getElementById('gear-btn');
+    if (gear) gear.remove();
+    const badge = clone.getElementById('editing-badge');
+    if (badge) badge.remove();
+    const exportBtn = clone.getElementById('export-btn');
+    if (exportBtn) exportBtn.remove();
+
+    // Inject frozen data note
+    const header = clone.querySelector('.header-left');
+    if (header) {
+      const note = clone.createElement ? clone.createElement('div') : document.createElement('div');
+      note.style.cssText = 'font-size:11px;color:#aaa;margin-top:4px';
+      note.textContent = `Snapshot exported ${new Date().toLocaleDateString('en-AU', {day:'numeric',month:'long',year:'numeric'})}`;
+      header.appendChild(note);
+    }
+
+    const html = '<!DOCTYPE html>' + clone.documentElement.outerHTML;
+    const blob = new Blob([html], {type:'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `BRG-PR-Dashboard-${new Date().toISOString().slice(0,10)}.html`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+}
+
+/* ---- UTILITY ---- */
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---- INIT ---- */
+document.addEventListener('DOMContentLoaded', () => {
+  setupTabs();
+  setupAdmin();
+  setupHighlightModal();
+  setupAddCoverageModal();
+  setupModalClose();
+  setupValueEditing();
+  setupExport();
+  renderHighlights();
+  applyOverrides();
+  renderExtraCoverage();
+});
+</script>
+</body>
+</html>
